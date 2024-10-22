@@ -4,12 +4,16 @@ import subprocess
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
+from gi.repository import Gdk
 
 class ProjectManager(Gtk.Window):
     def __init__(self):
         super().__init__(title="Project Manager")
         self.set_border_width(10)
         self.set_default_size(400, 300)
+
+        # Connect the key-press-event to the window
+        self.connect("key-press-event", self.on_key_press)
 
         # Determine config file path
         xdg_config_home = os.getenv('XDG_CONFIG_HOME', os.path.expanduser('~/.config'))
@@ -94,12 +98,16 @@ class ProjectManager(Gtk.Window):
             # Open the project in VSCode
             subprocess.Popen(["code", project_path])
 
+            Gtk.main_quit()
+
     def on_open_terminal(self, button):
         selected_row = self.project_list.get_selected_row()
         if selected_row:
             project_path = selected_row.get_child().get_text()
             # Open the Alacritty terminal in the project's directory
             subprocess.Popen(["alacritty", "--working-directory", project_path])
+
+            Gtk.main_quit()
 
     def on_add_project(self, button):
         dialog = Gtk.FileChooserDialog(
@@ -128,6 +136,13 @@ class ProjectManager(Gtk.Window):
 
     def on_close_button_clicked(self, button):
         Gtk.main_quit()  # This will close the application
+
+
+    def on_key_press(self, widget, event):
+        # Check if the Escape key is pressed
+        if event.keyval == Gdk.KEY_Escape:
+            Gtk.main_quit()  # This will close the application
+
 
 if __name__ == "__main__":
     app = ProjectManager()
